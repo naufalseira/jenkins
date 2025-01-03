@@ -16,6 +16,6 @@ WORKDIR /usr/src/app
 
 COPY --from=build /usr/src/app /usr/src/app
 
-EXPOSE 8080
+EXPOSE 3000
 
 CMD [ "node", "server.js" ]
