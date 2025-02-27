@@ -9,7 +9,8 @@ const HOST = '0.0.0.0';
 // App
 const app = express();
 app.get('/', (req, res) => {
-  res.send('Hello World! - v19.0');
+  res.send('Hello World! - v9.0');
+  res.send('This is a demo page for Jenkins CI/CD pipeline');
 });
 
 app.listen(PORT, HOST, () => {
