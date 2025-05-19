@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Pull Latest Code') {
+            steps {
+                echo 'Pulling the latest code...'
+                git branch: 'main', url: 'https://github.com/naufalseira/jenkins.git'
+            }
+        }
+        
+        stage('Check for Existing Container') {
+            steps {
+                script {
+                    echo 'Checking for existing Docker container...'
+                    def containerId = sh(script: 'docker ps -q --filter "name=ci-cd-demo"', returnStdout: true).trim()
+                    
+                    if (containerId) {
+                        echo 'Stopping existing container...'
+                        sh "docker stop ${containerId}"
+                        
+                        echo 'Removing existing container...'
+                        sh "docker rm ${containerId}"
+                    } else {
+                        echo 'No existing container found.'
+                    }
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def buildTag = "0xsera/ci-cd-demo:${BUILD_NUMBER}"
+                    echo "Building new Docker image with tag ${buildTag}..."
+                    sh "docker build -t ${buildTag} ."
+                    
+                    // Store the build tag as an environment variable for later stages
+                    env.BUILD_TAG = buildTag
+                }
+            }
+        }
+        
+        stage('Push to Registry') {
+            steps {
+                echo 'Pushing new Docker image to registry...'
+                withCredentials([string(credentialsId: 'docker-hub-password', variable: 'DOCKER_PASSWORD')]) {
+                    sh 'echo ${DOCKER_PASSWORD} | docker login -u 0xsera --password-stdin'
+                    sh "docker push ${env.BUILD_TAG}"
+                }
+            }
+        }
+        
+        stage('Deploy Container') {
+            steps {
+                echo 'Running new Docker container...'
+                sh "docker run -d -p 3000:3000 --name ci-cd-demo ${env.BUILD_TAG}"
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
