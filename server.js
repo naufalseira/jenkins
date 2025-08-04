@@ -9,7 +9,7 @@ const HOST = '0.0.0.0';
 // route for /
 const app = express();
 app.get('/', (req, res) => {
-  res.send('This is a demo page for Jenkins CI/CD pipeline - v9.0');
+  res.send('This is a demo page for Jenkins CI/CD pipeline');
 });
 
 // route for /about
@@ -23,9 +23,19 @@ app.get('/contact', (req, res) => {
 });
 
 // route for /api/data
+app.get('/api/healthcheck', (req, res) => {
+  const healthcheck = {
+    id: 1,
+    name: 'Health Check',
+    status: 'OK',
+  };
+  res.json(healthcheck);
+});
+
+// route for /api/data
 app.get('/api/data', (req, res) => {
   const data = {
-    id: 1,
+    id: 2,
     name: 'Sample Data'
   };
   res.json(data);
